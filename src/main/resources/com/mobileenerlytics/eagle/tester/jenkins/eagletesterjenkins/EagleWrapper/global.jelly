@@ -1,0 +1,20 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <f:section title="Eagle Tester">
+        <f:entry title="Eagle Server URL" field="eagleServerUri">
+          <f:textbox default="https://tester.mobileenerlytics.com" />
+        </f:entry>
+        <f:entry title="Username">
+          <f:textbox field="username" />
+        </f:entry>
+        <f:entry title="Password">
+          <f:password field="password" />
+        </f:entry>
+        <f:entry title="Path to adb">
+            <f:textbox field="adb" default="adb"/>
+        </f:entry>
+        <f:validateButton
+           title="Setup" progress="Working..."
+           method="setup" with="adb,username,password,eagleServerUri" />
+   </f:section>
+</j:jelly>
