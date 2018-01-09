@@ -4,10 +4,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class DeviceUtils {
     public static void pullFromDevice(final String adb, final String device, final String fromPath, final File toFile) {
@@ -15,13 +18,11 @@ public class DeviceUtils {
     }
 
     private static String runAdb(String adb, String device, String... cmd) {
-        String cmdreturn = "";
-        Runtime run = Runtime.getRuntime();
-        Process pr = null;
+        final StringBuilder stringBuilder = new StringBuilder();
 
         String line;
         try {
-            List<String> adbCmd = new LinkedList<>();
+            final List<String> adbCmd = new LinkedList<>();
             adbCmd.add(adb);
             if(!device.equals("")) {
                 adbCmd.add("-s");
@@ -36,12 +37,14 @@ public class DeviceUtils {
             Log.d(flatten.toString());
             ProcessBuilder processBuilder = new ProcessBuilder(adbCmd);
             processBuilder.redirectErrorStream(true);
-            pr = processBuilder.start();
-            BufferedReader buf = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-            while ((line = buf.readLine()) != null) {
-                cmdreturn += line + "\n";
+            final Process pr = processBuilder.start();
+            try(BufferedReader buf = new BufferedReader(new InputStreamReader(pr.getInputStream(), UTF_8))) {
+                while ((line = buf.readLine()) != null) {
+                    stringBuilder.append(line);
+                    stringBuilder.append("\n");
+                }
+                pr.waitFor();
             }
-            pr.waitFor();
         } catch (IOException e) {
             Log.d(e.getMessage());
             e.printStackTrace();
@@ -49,7 +52,8 @@ public class DeviceUtils {
             Log.d(e.getMessage());
             e.printStackTrace();
         }
-        Log.d("adb output:" + cmdreturn);
+        final String cmdreturn = stringBuilder.toString();
+        Log.d("adb output: " + cmdreturn);
         return cmdreturn;
 
     }

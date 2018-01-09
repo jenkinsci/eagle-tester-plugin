@@ -50,7 +50,6 @@ public class EagleWrapper extends BuildWrapper {
     private String commit = DEFAULT_COMMIT;
     private String authorName = DEFAULT_AUTHOR_NAME;
     private String authorEmail = DEFAULT_AUTHOR_EMAIL;
-    public static String eagleServerUri = "https://tester.mobileenerlytics.com";
     private boolean init = false;
 
     private EagleTesterArgument eagleTesterArgument;
@@ -107,7 +106,8 @@ public class EagleWrapper extends BuildWrapper {
         }
 
         private boolean postBuild(AbstractBuild build, BuildListener listener) throws InterruptedException, IOException {
-            JenkinsLocalOperation localOperation = getDescriptor().getLocalOperation();
+            DescriptorImpl desc = getDescriptor();
+            JenkinsLocalOperation localOperation = desc.getLocalOperation();
             // Check if authenticated
             if (!auth) {
                 listener.fatalError(TAG + "Failed to authenticate. Tester may not produce output");
@@ -117,9 +117,13 @@ public class EagleWrapper extends BuildWrapper {
                 listener.fatalError(TAG + "Seems initialization had failed. Tester may not produce output. Check logs for more details");
                 return true;
             }
-            listener.getLogger().printf("%s/api/upload/version_energy", eagleServerUri);
+            listener.getLogger().printf("%s/api/upload/version_energy", desc.mServerUri);
             // Pull logs from phone
             FilePath workspace = build.getWorkspace();
+            if(workspace == null) {
+                listener.fatalError(TAG + "No workspace. Tester may not produce output");
+                return true;
+            }
             FilePath dataFolder = new FilePath(workspace, DATA_FOLDER);
             FilePath outputFolderPath = new FilePath(dataFolder, OUTPUT_FOLDER);
 
@@ -128,7 +132,7 @@ public class EagleWrapper extends BuildWrapper {
 
             File fileToUpload = localOperation.after(outputFolder);
             if (fileToUpload == null) {
-                listener.getLogger().printf("%s No traces found. Skip\n", TAG);
+                listener.getLogger().printf("%s No traces found. Skip%n", TAG);
                 return true;
             }
 
@@ -138,9 +142,8 @@ public class EagleWrapper extends BuildWrapper {
                 listener.fatalError(TAG + "No connected device found. Tester may not produce output.");
                 return true;
             }
-            final String url = String.format("%s/api/upload/version_energy", eagleServerUri);
-            listener.getLogger().printf("%s %s\n", TAG, url);
-            DescriptorImpl desc = getDescriptor();
+            final String url = String.format("%s/api/upload/version_energy", desc.mServerUri);
+            listener.getLogger().printf("%s %s%n", TAG, url);
             final Client client = getClient(desc);
             WebTarget webTarget = client.target(url);
             MultiPart multiPart = new FormDataMultiPart()
@@ -163,9 +166,9 @@ public class EagleWrapper extends BuildWrapper {
             Response response = webTarget.request()
                     .post(Entity.entity(multiPart, multiPart.getMediaType()));
             if (200 == response.getStatusInfo().getStatusCode()) {
-                listener.getLogger().printf("%s See the energy report at %s/eagle/\n", TAG, eagleServerUri);
+                listener.getLogger().printf("%s See the energy report at %s/eagle/%n", TAG, desc.mServerUri);
             } else {
-                listener.getLogger().printf("%s Error uploading file %s to eagle server. %s\n", TAG,
+                listener.getLogger().printf("%s Error uploading file %s to eagle server. %s%n", TAG,
                         fileToUpload.getAbsolutePath(), response);
             }
 
@@ -192,11 +195,15 @@ public class EagleWrapper extends BuildWrapper {
         }
 
         // Set eagle tester args the variables
-        Log.out = listener.getLogger();
+        Log.init(listener.getLogger());
         initEagleTesterArg(build, listener);
 
         // Mkdir data, input and output folders
         FilePath workspace = build.getWorkspace();
+        if(workspace == null) {
+            listener.fatalError(TAG + "No workspace. Tester may not produce output");
+            return true;
+        }
         FilePath dataFolder = new FilePath(workspace, DATA_FOLDER);
         dataFolder.mkdirs();
 
@@ -234,7 +241,6 @@ public class EagleWrapper extends BuildWrapper {
 
     private void initEagleTesterArg(AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
         EnvVars env = build.getEnvironment(listener);
-        eagleTesterArgument.setWorkspace(build.getWorkspace().toString());
 
         String expandedBranch = DEFAULT_BRANCH;
         if (branch != null) {
@@ -261,9 +267,9 @@ public class EagleWrapper extends BuildWrapper {
             eagleTesterArgument.setPkgName(expandedPkgName);
         }
 
-        listener.getLogger().printf("%s Initialized eagle server URI %s package name %s author (%s, %s) current version (%s:%s) \n",
+        listener.getLogger().printf("%s Initialized eagle server URI %s package name %s author (%s, %s) current version (%s:%s) %n",
                 TAG,
-                eagleServerUri,
+                getDescriptor().mServerUri,
                 eagleTesterArgument.PACKAGE_NAME,
                 eagleTesterArgument.AUTHOR_NAME,
                 eagleTesterArgument.AUTHOR_EMAIL,
@@ -278,12 +284,12 @@ public class EagleWrapper extends BuildWrapper {
         private String password;
         private JenkinsLocalOperation localOperation;
 
+        String mServerUri = "https://tester.mobileenerlytics.com";
 
         public DescriptorImpl() {
             super(EagleWrapper.class);
             load();
             setAdb(adb);
-            setEagleServerUri(eagleServerUri);
         }
 
         @Override
@@ -360,17 +366,18 @@ public class EagleWrapper extends BuildWrapper {
         }
 
         public String getEagleServerUri() {
-            return eagleServerUri;
+            return mServerUri;
         }
 
         public void setEagleServerUri(String eagleServerUri) {
             if(eagleServerUri != null && eagleServerUri.length() > 0) {
                 int i = eagleServerUri.length() - 1;
-                if (eagleServerUri.charAt(i) == '/') {
-                    EagleWrapper.eagleServerUri = eagleServerUri.substring(0, i);
-                } else {
-                    EagleWrapper.eagleServerUri = eagleServerUri;
+                // Remove all leading slashes
+                while (eagleServerUri.charAt(i) == '/') {
+                    eagleServerUri = eagleServerUri.substring(0, i);
+                    i --;
                 }
+                mServerUri = eagleServerUri;
             }
         }
 

@@ -77,8 +77,13 @@ public abstract class LocalOperation {
                     Path outputFolderPath = outputFolder.toPath();
                     Path zipFilePath = outputFolderPath.resolve("traces.zip");
                     File zipFile = zipFilePath.toFile();
-                    if (zipFile.exists())
-                        zipFile.delete();
+                    int ctr = 0;
+                    while (zipFile.exists()) {
+                        if(zipFile.delete())
+                            break;
+                        zipFilePath = outputFolderPath.resolve("traces-" + (++ctr) + ".zip");
+                        zipFile = zipFilePath.toFile();
+                    }
                     ZipUtil.pack(tracesDir, zipFile);
                     return zipFile;
                 }

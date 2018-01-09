@@ -34,7 +34,6 @@ public class JenkinsLocalOperation extends LocalOperation {
 
     @Override
     public void pullFolderFromDevice(String device, String folderPath, File file) {
-        String fileName = file.getName();
         DeviceUtils.pullFromDevice(adb, device, folderPath, file);
     }
 

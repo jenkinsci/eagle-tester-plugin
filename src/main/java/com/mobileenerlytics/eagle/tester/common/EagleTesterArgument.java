@@ -7,12 +7,6 @@ public class EagleTesterArgument {
     public String COMMIT;
     public String CURRENT_VERSION;
     public String PACKAGE_NAME;
-    public String DATA_ABSOLUTE_PATH = System.getProperty("user.dir") + dataFolderName;
-
-    public String REFERENCE_VERSION;
-    public String FAIL;
-
-    private final static String dataFolderName = "/eagle_tester_data/";
 
     public EagleTesterArgument() {}
 
@@ -29,9 +23,5 @@ public class EagleTesterArgument {
 
     public void setPkgName(final String pkgName) {
         PACKAGE_NAME = pkgName;
-    }
-
-    public void setWorkspace(final String workspace) {
-        DATA_ABSOLUTE_PATH = workspace + dataFolderName;
     }
 }
