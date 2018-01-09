@@ -9,7 +9,6 @@
         <version>2.33</version>
         <relativePath/>
     </parent>
-    <groupId>com.mobileenerlytics.eagle.tester</groupId>
     <artifactId>eagle-tester</artifactId>
     <version>1.0</version>
     <packaging>hpi</packaging>
@@ -46,13 +45,12 @@
       </developer>
     </developers>
 
-    <!-- Assuming you want to host on @jenkinsci:
     <scm>
       <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
       <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>
       <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     </scm>
-     -->
+    
     <pluginRepositories>
         <pluginRepository>
             <id>repo.jenkins-ci.org</id>
