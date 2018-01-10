@@ -15,7 +15,7 @@
 
     <properties>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-        <jenkins.version>2.89.1</jenkins.version>
+        <jenkins.version>2.73.3</jenkins.version>
         <java.level>8</java.level>
         <!-- Other properties you may want to use:
              ~ java.level: set to 6 if your jenkins.version <= 1.611
@@ -23,6 +23,7 @@
              ~ hpi-plugin.version: The HPI Maven Plugin version used by the plugin..
              ~ stapler-plugin.version: The Stapler Maven plugin version required by the plugin.
         -->
+        <jersey.version>2.26</jersey.version>
     </properties>
 
     <name>Eagle Tester Plugin</name>
@@ -59,24 +60,19 @@
     </pluginRepositories>
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.jersey.core </groupId>
             <artifactId>jersey-client</artifactId>
-            <version>2.25.1</version>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-common</artifactId>
-            <version>2.25.1</version>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
-            <version>2.25.1</version>
+            <version>${jersey.version}</version>
         </dependency>
         <dependency>
             <groupId>org.zeroturnaround</groupId>
