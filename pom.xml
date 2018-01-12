@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.mobileenerlytics.eagle.tester</groupId>
     <artifactId>eagle-tester</artifactId>
-    <version>1.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>hpi</packaging>
 
     <properties>
