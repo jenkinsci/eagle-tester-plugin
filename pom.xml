@@ -27,7 +27,7 @@
 
     <name>Eagle Tester Plugin</name>
     <description>Allows Android app developers to test battery drain of their apps.</description>
-    <url>https://tester.mobileenerlytics.com/eagle/</url>
+    <url>https://wiki.jenkins.io/display/JENKINS/Eagle+Tester+Plugin</url>
 
     <licenses>
         <license>
