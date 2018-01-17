@@ -5,6 +5,10 @@
 	</f:entry>
 
     <f:advanced>
+        <!--<f:entry title="Project name" field="projectName">
+            <f:textbox default="$JOB_NAME"/>
+        </f:entry>-->
+
         <f:entry title="Author name" field="authorName">
             <f:textbox default="$GIT_AUTHOR_NAME"/>
         </f:entry>

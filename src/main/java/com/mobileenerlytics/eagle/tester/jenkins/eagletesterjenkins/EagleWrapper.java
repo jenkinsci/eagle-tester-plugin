@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class EagleWrapper extends BuildWrapper {
+    private final static String DEFAULT_PROJECT_NAME = "default";
     private final static String DEFAULT_AUTHOR_NAME = "noname";
     private final static String DEFAULT_AUTHOR_EMAIL = "noemail";
     private final static String DEFAULT_BRANCH = "nobranch";
@@ -48,6 +49,7 @@ public class EagleWrapper extends BuildWrapper {
     private String pkgName;
     private String branch = DEFAULT_BRANCH;
     private String commit = DEFAULT_COMMIT;
+    private String projectName = DEFAULT_PROJECT_NAME;
     private String authorName = DEFAULT_AUTHOR_NAME;
     private String authorEmail = DEFAULT_AUTHOR_EMAIL;
     private boolean init = false;
@@ -57,6 +59,7 @@ public class EagleWrapper extends BuildWrapper {
     @DataBoundConstructor
     public EagleWrapper(String pkgName, String authorName, String authorEmail, String branch, String commit) {
         this.pkgName = pkgName;
+        this.projectName = DEFAULT_PROJECT_NAME;
         this.authorName = authorName;
         this.authorEmail = authorEmail;
         this.branch = branch;
@@ -68,6 +71,10 @@ public class EagleWrapper extends BuildWrapper {
     public String getPkgName() {
         return pkgName;
     }
+
+    //public String getProjectName() {
+    //    return projectName;
+    //}
 
     public String getAuthorName() {
         return authorName;
@@ -149,6 +156,7 @@ public class EagleWrapper extends BuildWrapper {
             MultiPart multiPart = new FormDataMultiPart()
                     .field("device", devices.get(0))
                     .field("pkg", pkgName)
+                    .field("project_name", eagleTesterArgument.PROJECT_NAME)
                     .field("author_name", eagleTesterArgument.AUTHOR_NAME)
                     .field("author_email", eagleTesterArgument.AUTHOR_EMAIL)
                     .field("branch", eagleTesterArgument.BRANCH)
@@ -166,7 +174,7 @@ public class EagleWrapper extends BuildWrapper {
             Response response = webTarget.request()
                     .post(Entity.entity(multiPart, multiPart.getMediaType()));
             if (200 == response.getStatusInfo().getStatusCode()) {
-                listener.getLogger().printf("%s See the energy report at %s/eagle/%n", TAG, desc.mServerUri);
+                listener.getLogger().printf("%s See the energy report at %s%n", TAG, desc.mServerUri);
             } else {
                 listener.getLogger().printf("%s Error uploading file %s to eagle server. %s%n", TAG,
                         fileToUpload.getAbsolutePath(), response);
@@ -252,6 +260,12 @@ public class EagleWrapper extends BuildWrapper {
         }
         eagleTesterArgument.setCurrentVersion(expandedBranch, expandedCommit);
 
+        String expandedProjectName = DEFAULT_PROJECT_NAME;
+        if(projectName != null) {
+            expandedProjectName = env.expand(projectName);
+        }
+        eagleTesterArgument.setProject(expandedProjectName);
+
         String expandedAuthorName = DEFAULT_AUTHOR_NAME;
         if(authorName != null) {
             expandedAuthorName = env.expand(authorName);
@@ -267,10 +281,11 @@ public class EagleWrapper extends BuildWrapper {
             eagleTesterArgument.setPkgName(expandedPkgName);
         }
 
-        listener.getLogger().printf("%s Initialized eagle server URI %s package name %s author (%s, %s) current version (%s:%s) %n",
+        listener.getLogger().printf("%s Initialized eagle server URI %s package name %s, project name %s author (%s, %s) current version (%s:%s) %n",
                 TAG,
                 getDescriptor().mServerUri,
                 eagleTesterArgument.PACKAGE_NAME,
+                eagleTesterArgument.PROJECT_NAME,
                 eagleTesterArgument.AUTHOR_NAME,
                 eagleTesterArgument.AUTHOR_EMAIL,
                 eagleTesterArgument.BRANCH,

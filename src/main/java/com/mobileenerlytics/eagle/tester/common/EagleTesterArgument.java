@@ -7,6 +7,7 @@ public class EagleTesterArgument {
     public String COMMIT;
     public String CURRENT_VERSION;
     public String PACKAGE_NAME;
+    public String PROJECT_NAME;
 
     public EagleTesterArgument() {}
 
@@ -23,5 +24,9 @@ public class EagleTesterArgument {
 
     public void setPkgName(final String pkgName) {
         PACKAGE_NAME = pkgName;
+    }
+
+    public void setProject(final String projectName) {
+        PROJECT_NAME = projectName;
     }
 }

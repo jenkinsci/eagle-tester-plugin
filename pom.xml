@@ -22,7 +22,7 @@
              ~ hpi-plugin.version: The HPI Maven Plugin version used by the plugin..
              ~ stapler-plugin.version: The Stapler Maven plugin version required by the plugin.
         -->
-        <jersey.version>2.26</jersey.version>
+        <jersey.version>2.26-b03</jersey.version>
     </properties>
 
     <name>Eagle Tester Plugin</name>
