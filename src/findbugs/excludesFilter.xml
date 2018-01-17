@@ -1,0 +1,13 @@
+<FindBugsFilter>
+  <Match>
+    <Bug pattern="MS_CANNOT_BE_FINAL"/>
+    <Class name="com.mobileenerlytics.eagle.tester.common.util.Log"/>
+    <Field name="out"/>
+  </Match>
+
+  <Match>
+    <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"/>
+    <Class name="com.mobileenerlytics.eagle.tester.jenkins.eagletesterjenkins.EagleWrapper"/>
+    <Method name="setUp"/>
+  </Match>
+</FindBugsFilter>
