@@ -178,6 +178,7 @@ public class EagleWrapper extends BuildWrapper {
 
     @Override
     public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
+        Log.out = listener.getLogger();
         preBuild(build, listener);
         return new EagleEnvironment();
     }
@@ -195,7 +196,6 @@ public class EagleWrapper extends BuildWrapper {
         }
 
         // Set eagle tester args the variables
-        Log.init(listener.getLogger());
         initEagleTesterArg(build, listener);
 
         // Mkdir data, input and output folders
