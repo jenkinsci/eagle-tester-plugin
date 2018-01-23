@@ -236,7 +236,7 @@ public class EagleWrapper extends BuildWrapper {
     }
 
     static boolean authenticate(Client client) {
-        String url = "https://tester.mobileenerlytics.com/auth/";
+        String url = "https://tester.mobileenerlytics.com/api/auth/";
         WebTarget webTarget = client.target(url);
         Response response = webTarget.request().get();
         if (200 == response.getStatusInfo().getStatusCode()) {
