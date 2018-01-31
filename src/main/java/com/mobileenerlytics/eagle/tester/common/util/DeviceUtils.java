@@ -65,11 +65,16 @@ public class DeviceUtils {
     public static void installApp(String adb, String device, String appPkgName, File apkFile) {
         //Uninstall app first
         runAdb(adb, device, "uninstall", appPkgName);
-        runAdb(adb, device, "install", "-r", apkFile.getAbsolutePath());
+        runAdb(adb, device, "install", "-g", "-r", apkFile.getAbsolutePath());
     }
 
     public static void forceStopApp(String adb, String device, String appPkgName) {
         runAdb(adb, device, "shell", "am", "force-stop", appPkgName);
+    }
+
+    public static String getExternalStorage(String adb, String device) {
+        String storage = runAdb(adb, device, "shell", "echo", "$EXTERNAL_STORAGE");
+        return storage.replace("\n", "").replace("\r", "");
     }
 
     public static List<String> getDevices(String adb) {

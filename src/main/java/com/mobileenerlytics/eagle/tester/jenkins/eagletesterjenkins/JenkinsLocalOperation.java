@@ -48,6 +48,11 @@ public class JenkinsLocalOperation extends LocalOperation {
     }
 
     @Override
+    protected String getExternalFilePath(String device, String relativeFilePath) {
+        return String.format("%s/%s", DeviceUtils.getExternalStorage(adb, device), relativeFilePath);
+    }
+
+    @Override
     public List<String> getDevices() {
         return DeviceUtils.getDevices(adb);
     }

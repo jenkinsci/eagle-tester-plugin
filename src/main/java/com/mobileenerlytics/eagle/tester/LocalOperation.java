@@ -20,7 +20,7 @@ public abstract class LocalOperation {
     private static final String TEST_APP_APK_NAME = "TesterApp.apk";
     private static final String TESTER_APK_URL = "https://tester.mobileenerlytics.com/eagle/" + TEST_APP_APK_NAME;
     private static final String TEST_APP_PKG_NAME = "com.mobileenerlytics.eagle.tester.app";
-    private static final String PHONE_TRACES_FOLDER = "/data/data/" + TEST_APP_PKG_NAME + "/cache/traces";
+    private static final String TRACES_FOLDER = "traces";
 
     public LocalOperation(String adb) {
         this.adb = adb;
@@ -53,7 +53,8 @@ public abstract class LocalOperation {
             // An app dev might run battery tests locally with Android studio
             // without using Eagle Tester Jenkins plugin. This might leave leftover traces folder.
             // We thus clear such folder before starting the build for this commit.
-            rmFolderFromDevice(device, PHONE_TRACES_FOLDER);
+            final String phoneTracesFolder = getExternalFilePath(device, TRACES_FOLDER);
+            rmFolderFromDevice(device, phoneTracesFolder);
         }
     }
 
@@ -68,8 +69,9 @@ public abstract class LocalOperation {
                 if (tracesDir.exists()) {
                     FileUtils.deleteDirectory(tracesDir);
                 }
-                pullFolderFromDevice(device, PHONE_TRACES_FOLDER, outputFolder);
-                rmFolderFromDevice(device, PHONE_TRACES_FOLDER);
+                final String phoneTracesFolder = getExternalFilePath(device, TRACES_FOLDER);
+                pullFolderFromDevice(device, phoneTracesFolder, outputFolder);
+                rmFolderFromDevice(device, phoneTracesFolder);
                 forceStopApp(device, TEST_APP_PKG_NAME);
 
                 if (tracesDir.exists()) {
@@ -103,6 +105,8 @@ public abstract class LocalOperation {
     protected abstract void installApp(String device, String appPkgName, File apkFile);
 
     protected abstract void forceStopApp(String device, String appPkgName);
+
+    protected abstract String getExternalFilePath(String device, String relativeFilePath);
 
     protected abstract List<String> getDevices();
 }
