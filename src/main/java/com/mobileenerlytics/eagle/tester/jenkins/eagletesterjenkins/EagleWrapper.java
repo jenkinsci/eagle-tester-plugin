@@ -113,8 +113,9 @@ public class EagleWrapper extends BuildWrapper {
         }
 
         private boolean postBuild(AbstractBuild build, BuildListener listener) throws InterruptedException, IOException {
+            EnvVars env = build.getEnvironment(listener);
             DescriptorImpl desc = getDescriptor();
-            JenkinsLocalOperation localOperation = desc.getLocalOperation();
+            JenkinsLocalOperation localOperation = JenkinsLocalOperation.getInstance(env.expand(desc.getAdb()));
             // Check if authenticated
             if (!auth) {
                 listener.fatalError(TAG + "Failed to authenticate. Tester may not produce output");
@@ -192,10 +193,11 @@ public class EagleWrapper extends BuildWrapper {
     }
 
     private boolean preBuild(AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
-        JenkinsLocalOperation localOperation = getDescriptor().getLocalOperation();
+        EnvVars env = build.getEnvironment(listener);
+        DescriptorImpl desc = (DescriptorImpl) getDescriptor();
+        JenkinsLocalOperation localOperation = JenkinsLocalOperation.getInstance(env.expand(desc.getAdb()));
         // Authenticate with the server
         if (!auth) {
-            DescriptorImpl desc = (DescriptorImpl) getDescriptor();
             auth = authenticate(getClient(desc));
         }
         if (!auth) {
@@ -297,7 +299,6 @@ public class EagleWrapper extends BuildWrapper {
         private String adb;
         private String username;
         private String password;
-        private JenkinsLocalOperation localOperation;
 
         String mServerUri = "https://tester.mobileenerlytics.com";
 
@@ -342,6 +343,7 @@ public class EagleWrapper extends BuildWrapper {
 
             setAdb(adb);
             try {
+                JenkinsLocalOperation localOperation = JenkinsLocalOperation.getInstance(this.adb);
                 localOperation.prepareDevice();
             } catch (IOException e) {
                 return FormValidation.error("Failed to install Eagle Tester app. Please make sure that the phone is " +
@@ -360,7 +362,6 @@ public class EagleWrapper extends BuildWrapper {
                 this.adb = "adb";
             else
                 this.adb = adb;
-            localOperation = JenkinsLocalOperation.getInstance(this.adb);
         }
 
         public String getUsername() {
@@ -393,10 +394,6 @@ public class EagleWrapper extends BuildWrapper {
                 }
                 mServerUri = eagleServerUri;
             }
-        }
-
-        JenkinsLocalOperation getLocalOperation() {
-            return localOperation;
         }
     }
 }
