@@ -3,6 +3,13 @@ package com.mobileenerlytics.eagle.tester.jenkins.eagletesterjenkins;
 
 import com.mobileenerlytics.eagle.tester.LocalOperation;
 import com.mobileenerlytics.eagle.tester.common.util.DeviceUtils;
+import com.mobileenerlytics.eagle.tester.common.util.Log;
+import hudson.EnvVars;
+import hudson.slaves.EnvironmentVariablesNodeProperty;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodePropertyDescriptor;
+import hudson.util.DescribableList;
+import jenkins.model.Jenkins;
 
 import java.io.File;
 import java.util.List;
@@ -15,10 +22,17 @@ public class JenkinsLocalOperation extends LocalOperation {
     static JenkinsLocalOperation localOperation = null;
 
     public static JenkinsLocalOperation getInstance(String adb) {
-        if (localOperation == null) {
-            localOperation = new JenkinsLocalOperation(adb);
+        DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodes = Jenkins.getInstance().getGlobalNodeProperties();
+        String expandedAdb = adb;
+        for(EnvironmentVariablesNodeProperty tmp : nodes.getAll(EnvironmentVariablesNodeProperty.class)){
+            EnvVars env = tmp.getEnvVars();
+            expandedAdb = env.expand(expandedAdb);
         }
-        localOperation.adb = adb;
+        Log.i("Use adb: " + expandedAdb);
+        if (localOperation == null) {
+            localOperation = new JenkinsLocalOperation(expandedAdb);
+        }
+        localOperation.adb = expandedAdb;
         return localOperation;
     }
 

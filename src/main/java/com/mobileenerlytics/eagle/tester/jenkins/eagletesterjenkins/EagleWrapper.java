@@ -341,7 +341,6 @@ public class EagleWrapper extends BuildWrapper {
                 return FormValidation.error("Authentication failed. Incorrect username: " + username + " or password: " + password);
 
             setAdb(adb);
-            localOperation = JenkinsLocalOperation.getInstance(this.adb);
             try {
                 localOperation.prepareDevice();
             } catch (IOException e) {
