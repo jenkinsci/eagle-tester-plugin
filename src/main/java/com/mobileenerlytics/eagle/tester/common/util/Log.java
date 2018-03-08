@@ -1,7 +1,7 @@
 package com.mobileenerlytics.eagle.tester.common.util;
 
 
-import com.mobileenerlytics.eagle.tester.common.Configure;
+import com.mobileenerlytics.eagle.tester.jenkins.eagletesterjenkins.EagleWrapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.PrintStream;
@@ -32,7 +32,7 @@ public class Log {
     }
 
     public static void d(String msg) {
-        if (Configure.debug) {
+        if (EagleWrapper.debug) {
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
             String now = df.format(Calendar.getInstance().getTime());
             out.println("[eagle-tester] " + now + " debug: " + msg);

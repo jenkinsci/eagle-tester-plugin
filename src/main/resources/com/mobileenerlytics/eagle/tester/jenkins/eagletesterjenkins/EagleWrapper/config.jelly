@@ -24,5 +24,9 @@
         <f:entry title="Commit" field="commit">
             <f:textbox default="$GIT_COMMIT"/>
         </f:entry>
+
+        <f:entry title="Debug messages in build" field="debug">
+            <f:checkbox/>
+        </f:entry>
     </f:advanced>
 </j:jelly>

@@ -52,18 +52,20 @@ public class EagleWrapper extends BuildWrapper {
     private String projectName = DEFAULT_PROJECT_NAME;
     private String authorName = DEFAULT_AUTHOR_NAME;
     private String authorEmail = DEFAULT_AUTHOR_EMAIL;
+    public static boolean debug = false;
     private boolean init = false;
 
     private EagleTesterArgument eagleTesterArgument;
 
     @DataBoundConstructor
-    public EagleWrapper(String pkgName, String authorName, String authorEmail, String branch, String commit) {
+    public EagleWrapper(String pkgName, String authorName, String authorEmail, String branch, String commit, boolean debug) {
         this.pkgName = pkgName;
         this.projectName = DEFAULT_PROJECT_NAME;
         this.authorName = authorName;
         this.authorEmail = authorEmail;
         this.branch = branch;
         this.commit = commit;
+        this.debug = debug;
         eagleTesterArgument = new EagleTesterArgument();
     }
 
@@ -90,6 +92,10 @@ public class EagleWrapper extends BuildWrapper {
 
     public String getCommit() {
         return commit;
+    }
+
+    public boolean isDebug() {
+        return debug;
     }
 
     @Override
