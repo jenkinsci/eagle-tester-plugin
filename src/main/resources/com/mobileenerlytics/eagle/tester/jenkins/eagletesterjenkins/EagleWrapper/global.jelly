@@ -14,7 +14,7 @@
             <f:textbox field="adb" default="adb"/>
         </f:entry>
         <f:validateButton
-           title="Setup" progress="Working..."
-           method="setup" with="adb,username,password,eagleServerUri" />
+           title="Verify" progress="Working..."
+           method="verify" with="adb,username,password,eagleServerUri" />
    </f:section>
 </j:jelly>

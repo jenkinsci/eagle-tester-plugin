@@ -115,7 +115,7 @@ public class EagleWrapper extends BuildWrapper {
         private boolean postBuild(AbstractBuild build, BuildListener listener) throws InterruptedException, IOException {
             EnvVars env = build.getEnvironment(listener);
             DescriptorImpl desc = getDescriptor();
-            JenkinsLocalOperation localOperation = JenkinsLocalOperation.getInstance(env.expand(desc.getAdb()));
+            JenkinsLocalOperation localOperation = new JenkinsLocalOperation(env.expand(desc.getAdb()));
             // Check if authenticated
             if (!auth) {
                 listener.fatalError(TAG + "Failed to authenticate. Tester may not produce output");
@@ -195,7 +195,7 @@ public class EagleWrapper extends BuildWrapper {
     private boolean preBuild(AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
         EnvVars env = build.getEnvironment(listener);
         DescriptorImpl desc = (DescriptorImpl) getDescriptor();
-        JenkinsLocalOperation localOperation = JenkinsLocalOperation.getInstance(env.expand(desc.getAdb()));
+        JenkinsLocalOperation localOperation = new JenkinsLocalOperation(env.expand(desc.getAdb()));
         // Authenticate with the server
         if (!auth) {
             auth = authenticate(getClient(desc));
@@ -223,7 +223,6 @@ public class EagleWrapper extends BuildWrapper {
         FilePath outputFolder = new FilePath(dataFolder, OUTPUT_FOLDER);
         outputFolder.mkdirs();
 
-        // Install TesterApp on the phone
         localOperation.before();
         init = true;
 
@@ -330,26 +329,18 @@ public class EagleWrapper extends BuildWrapper {
             return "Eagle Tester";
         }
 
-        public FormValidation doSetup(@QueryParameter("adb") final String adb,
+        public FormValidation doVerify(@QueryParameter("adb") final String adb,
                                       @QueryParameter("username") final String username,
                                       @QueryParameter("password") final String password,
                                       @QueryParameter("eagleServerUri") final String eagleServerUri) {
             this.username = username;
             this.password = password;
             setEagleServerUri(eagleServerUri);
+            setAdb(adb);
+
             Client client = EagleWrapper.getClient(this);
             if (!EagleWrapper.authenticate(client))
                 return FormValidation.error("Authentication failed. Incorrect username: " + username + " or password: " + password);
-
-            setAdb(adb);
-            try {
-                JenkinsLocalOperation localOperation = JenkinsLocalOperation.getInstance(this.adb);
-                localOperation.prepareDevice();
-            } catch (IOException e) {
-                return FormValidation.error("Failed to install Eagle Tester app. Please make sure that the phone is " +
-                        "connected and has \"USB Debugging\" enabled in \"Settings > Developer Options\".");
-            }
-
             return FormValidation.ok("Success");
         }
 

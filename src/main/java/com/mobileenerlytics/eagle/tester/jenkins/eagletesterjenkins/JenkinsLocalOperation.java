@@ -15,26 +15,11 @@ import java.io.File;
 import java.util.List;
 
 public class JenkinsLocalOperation extends LocalOperation {
-    private JenkinsLocalOperation(String adb) {
+    public JenkinsLocalOperation(String adb) {
         super(adb);
     }
 
-    static JenkinsLocalOperation localOperation = null;
-
-    public static JenkinsLocalOperation getInstance(String adb) {
-        DescribableList<NodeProperty<?>,NodePropertyDescriptor> nodes = Jenkins.getInstance().getGlobalNodeProperties();
-        String expandedAdb = adb;
-        for(EnvironmentVariablesNodeProperty tmp : nodes.getAll(EnvironmentVariablesNodeProperty.class)){
-            EnvVars env = tmp.getEnvVars();
-            expandedAdb = env.expand(expandedAdb);
-        }
-        Log.i("Use adb: " + expandedAdb);
-        if (localOperation == null) {
-            localOperation = new JenkinsLocalOperation(expandedAdb);
-        }
-        localOperation.adb = expandedAdb;
-        return localOperation;
-    }
+    JenkinsLocalOperation localOperation = null;
 
     @Override
     protected void rmFolderFromDevice(String device, String folderPath) {

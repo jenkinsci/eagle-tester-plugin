@@ -17,34 +17,11 @@ import java.util.List;
 
 public abstract class LocalOperation {
     protected String adb;
-    private static final String TEST_APP_APK_NAME = "TesterApp.apk";
-    private static final String TESTER_APK_URL = "https://tester.mobileenerlytics.com/eagle/" + TEST_APP_APK_NAME;
     private static final String TEST_APP_PKG_NAME = "com.mobileenerlytics.eagle.tester.app";
     private static final String TRACES_FOLDER = "traces";
 
     public LocalOperation(String adb) {
         this.adb = adb;
-    }
-
-    public void prepareDevice() throws IOException {
-        List<String> devices = getDevices();
-
-        try {
-            Path apkPath = Files.createTempFile("app", ".apk");
-
-            // Download app apk
-            try (ReadableByteChannel in = Channels.newChannel(new URL(TESTER_APK_URL).openStream());
-                 FileChannel out = FileChannel.open(apkPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE)) {
-                out.transferFrom(in, 0, Long.MAX_VALUE);
-            }
-            File apkFile = apkPath.toFile();
-            for (String device : devices) {
-                installApp(device, TEST_APP_PKG_NAME, apkFile);
-            }
-        } catch (IOException ioe) {
-            Log.e(TEST_APP_APK_NAME + " wasn't found. Tester may not produce output.");
-            throw ioe;
-        }
     }
 
     public void before() {
