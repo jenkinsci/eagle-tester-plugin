@@ -12,6 +12,8 @@ import java.util.Calendar;
 public class Log {
     @SuppressFBWarnings({"MS_SHOULD_BE_FINAL"})
     public static PrintStream out = System.out;
+    @SuppressFBWarnings({"MS_SHOULD_BE_FINAL"})
+    public static boolean debug = false;
 
     public static void i(String msg) {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
@@ -32,7 +34,7 @@ public class Log {
     }
 
     public static void d(String msg) {
-        if (EagleWrapper.debug) {
+        if (debug) {
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
             String now = df.format(Calendar.getInstance().getTime());
             out.println("[eagle-tester] " + now + " debug: " + msg);

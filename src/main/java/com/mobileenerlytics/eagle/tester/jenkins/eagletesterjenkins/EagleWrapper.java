@@ -52,20 +52,18 @@ public class EagleWrapper extends BuildWrapper {
     private String projectName = DEFAULT_PROJECT_NAME;
     private String authorName = DEFAULT_AUTHOR_NAME;
     private String authorEmail = DEFAULT_AUTHOR_EMAIL;
-    public static boolean debug = false;
     private boolean init = false;
 
     private EagleTesterArgument eagleTesterArgument;
 
     @DataBoundConstructor
-    public EagleWrapper(String pkgName, String authorName, String authorEmail, String branch, String commit, boolean debug) {
+    public EagleWrapper(String pkgName, String authorName, String authorEmail, String branch, String commit) {
         this.pkgName = pkgName;
         this.projectName = DEFAULT_PROJECT_NAME;
         this.authorName = authorName;
         this.authorEmail = authorEmail;
         this.branch = branch;
         this.commit = commit;
-        this.debug = debug;
         eagleTesterArgument = new EagleTesterArgument();
     }
 
@@ -92,10 +90,6 @@ public class EagleWrapper extends BuildWrapper {
 
     public String getCommit() {
         return commit;
-    }
-
-    public boolean isDebug() {
-        return debug;
     }
 
     @Override
@@ -202,6 +196,7 @@ public class EagleWrapper extends BuildWrapper {
         EnvVars env = build.getEnvironment(listener);
         DescriptorImpl desc = (DescriptorImpl) getDescriptor();
         JenkinsLocalOperation localOperation = new JenkinsLocalOperation(env.expand(desc.getAdb()));
+
         // Authenticate with the server
         if (!auth) {
             auth = authenticate(getClient(desc));
@@ -304,6 +299,7 @@ public class EagleWrapper extends BuildWrapper {
         private String adb;
         private String username;
         private String password;
+        private boolean debug;
 
         String mServerUri = "https://tester.mobileenerlytics.com";
 
@@ -321,6 +317,7 @@ public class EagleWrapper extends BuildWrapper {
             password = formData.getString("password");
             setEagleServerUri(formData.getString("eagleServerUri"));
             setAdb(formData.getString("adb"));
+            setDebug(formData.getBoolean("debug"));
             save();
             return super.configure(req, formData);
         }
@@ -391,6 +388,16 @@ public class EagleWrapper extends BuildWrapper {
                 }
                 mServerUri = eagleServerUri;
             }
+        }
+
+        public boolean isDebug() {
+            return debug;
+        }
+
+        @SuppressWarnings(value ="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
+        public void setDebug(boolean debug) {
+            this.debug = debug;
+            Log.debug = debug;
         }
     }
 }

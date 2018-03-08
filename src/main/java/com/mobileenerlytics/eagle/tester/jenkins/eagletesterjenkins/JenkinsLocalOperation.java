@@ -19,8 +19,6 @@ public class JenkinsLocalOperation extends LocalOperation {
         super(adb);
     }
 
-    JenkinsLocalOperation localOperation = null;
-
     @Override
     protected void rmFolderFromDevice(String device, String folderPath) {
         DeviceUtils.rmFromDevice(adb, device, folderPath);
