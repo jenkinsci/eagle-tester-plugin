@@ -12,7 +12,7 @@ import java.util.Calendar;
 public class Log {
     @SuppressFBWarnings({"MS_SHOULD_BE_FINAL"})
     public static PrintStream out = System.out;
-    @SuppressFBWarnings({"MS_SHOULD_BE_FINAL"})
+    @SuppressFBWarnings({"MS_CANNOT_BE_FINAL"})
     public static boolean debug = false;
 
     public static void i(String msg) {

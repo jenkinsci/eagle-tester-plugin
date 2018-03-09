@@ -2,6 +2,7 @@ package com.mobileenerlytics.eagle.tester.jenkins.eagletesterjenkins;
 
 import com.mobileenerlytics.eagle.tester.common.EagleTesterArgument;
 import com.mobileenerlytics.eagle.tester.common.util.Log;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
 import hudson.FilePath;
@@ -394,7 +395,7 @@ public class EagleWrapper extends BuildWrapper {
             return debug;
         }
 
-        @SuppressWarnings(value ="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
+        @SuppressFBWarnings({"ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD"})
         public void setDebug(boolean debug) {
             this.debug = debug;
             Log.debug = debug;
