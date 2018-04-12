@@ -1,4 +1,4 @@
-package com.mobileenerlytics.eagle.tester.jenkins.eagletesterjenkins;
+package com.mobileenerlytics.eagle.tester.common.util;
 
 
 import com.mobileenerlytics.eagle.tester.LocalOperation;

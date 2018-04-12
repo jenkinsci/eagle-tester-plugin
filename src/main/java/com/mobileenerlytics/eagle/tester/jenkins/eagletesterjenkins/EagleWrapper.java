@@ -1,7 +1,9 @@
 package com.mobileenerlytics.eagle.tester.jenkins.eagletesterjenkins;
 
 import com.mobileenerlytics.eagle.tester.common.EagleTesterArgument;
+import com.mobileenerlytics.eagle.tester.common.util.JenkinsLocalOperation;
 import com.mobileenerlytics.eagle.tester.common.util.Log;
+import com.mobileenerlytics.eagle.tester.common.util.NetUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.EnvVars;
 import hudson.Extension;
@@ -15,24 +17,16 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class EagleWrapper extends BuildWrapper {
     private final static String DEFAULT_PROJECT_NAME = "default";
@@ -145,46 +139,36 @@ public class EagleWrapper extends BuildWrapper {
                 return true;
             }
 
-            // Upload traces to server
             List<String> devices = localOperation.getDevices();
             if (devices.isEmpty()) {
                 listener.fatalError(TAG + "No connected device found. Tester may not produce output.");
                 return true;
             }
+
             final String url = String.format("%s/api/upload/version_energy", desc.mServerUri);
             listener.getLogger().printf("%s %s%n", TAG, url);
-            final Client client = getClient(desc);
-            WebTarget webTarget = client.target(url);
-            MultiPart multiPart = new FormDataMultiPart()
-                    .field("device", devices.get(0))
-                    .field("pkg", pkgName)
-                    .field("project_name", eagleTesterArgument.PROJECT_NAME)
-                    .field("author_name", eagleTesterArgument.AUTHOR_NAME)
-                    .field("author_email", eagleTesterArgument.AUTHOR_EMAIL)
-                    .field("branch", eagleTesterArgument.BRANCH)
-                    .field("commit", eagleTesterArgument.COMMIT)
-                    .field("cur_version", eagleTesterArgument.CURRENT_VERSION);
-            multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
-            FileDataBodyPart fileDataBodyPart = new FileDataBodyPart(fileToUpload.getName(),
-                    fileToUpload, MediaType.APPLICATION_OCTET_STREAM_TYPE);
-            fileDataBodyPart.setContentDisposition(
-                    FormDataContentDisposition.name("file")
-                            .fileName(fileToUpload.getName()).build());
-            multiPart.bodyPart(fileDataBodyPart);
+            Map<String, String> fields = new HashMap<>();
+            fields.put("device", devices.get(0));
+            fields.put("pkg", pkgName);
+            fields.put("project_name", eagleTesterArgument.PROJECT_NAME);
+            fields.put("author_name", eagleTesterArgument.AUTHOR_NAME);
+            fields.put("author_email", eagleTesterArgument.AUTHOR_EMAIL);
+            fields.put("branch", eagleTesterArgument.BRANCH);
+            fields.put("commit", eagleTesterArgument.COMMIT);
+            fields.put("cur_version", eagleTesterArgument.CURRENT_VERSION);
 
-            Response response = webTarget.request()
-                    .post(Entity.entity(multiPart, multiPart.getMediaType()));
+            Response response = NetUtils.upload(fileToUpload, url, desc, fields);
             if (200 == response.getStatusInfo().getStatusCode()) {
                 listener.getLogger().printf("%s See the energy report at %s%n", TAG, desc.mServerUri);
             } else {
                 listener.getLogger().printf("%s Error uploading file %s to eagle server. %s%n", TAG,
                         fileToUpload.getAbsolutePath(), response);
             }
-
             return true;
         }
     }
+
 
     @Override
     public Environment setUp(AbstractBuild build, Launcher launcher, BuildListener listener) throws IOException, InterruptedException {
@@ -200,7 +184,7 @@ public class EagleWrapper extends BuildWrapper {
 
         // Authenticate with the server
         if (!auth) {
-            auth = authenticate(getClient(desc));
+            auth = NetUtils.authenticate(desc);
         }
         if (!auth) {
             listener.fatalError(TAG + "Failed to authenticate. Tester may not produce output");
@@ -229,25 +213,6 @@ public class EagleWrapper extends BuildWrapper {
         init = true;
 
         return true;
-    }
-
-    static Client getClient(EagleWrapper.DescriptorImpl descriptor) {
-        return ClientBuilder.newBuilder()
-                .register(MultiPartFeature.class)
-                .register(new EagleAuthenticator(descriptor))
-                .build();
-    }
-
-    static boolean authenticate(Client client) {
-        String url = "https://tester.mobileenerlytics.com/api/auth/";
-        WebTarget webTarget = client.target(url);
-        Response response = webTarget.request().get();
-        if (200 == response.getStatusInfo().getStatusCode()) {
-            Log.i("Authed ~");
-            return true;
-        }
-        Log.w("Failed to authenticate. Check username, password");
-        return false;
     }
 
     private void initEagleTesterArg(AbstractBuild<?, ?> build, BuildListener listener) throws IOException, InterruptedException {
@@ -342,8 +307,7 @@ public class EagleWrapper extends BuildWrapper {
             setEagleServerUri(eagleServerUri);
             setAdb(adb);
 
-            Client client = EagleWrapper.getClient(this);
-            if (!EagleWrapper.authenticate(client))
+            if (!NetUtils.authenticate(this))
                 return FormValidation.error("Authentication failed. Incorrect username: " + username + " or password: " + password);
             return FormValidation.ok("Success");
         }

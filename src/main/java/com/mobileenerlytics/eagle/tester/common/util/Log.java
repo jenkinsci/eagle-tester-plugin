@@ -1,7 +1,6 @@
 package com.mobileenerlytics.eagle.tester.common.util;
 
 
-import com.mobileenerlytics.eagle.tester.jenkins.eagletesterjenkins.EagleWrapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import java.io.PrintStream;

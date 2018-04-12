@@ -1,4 +1,6 @@
-package com.mobileenerlytics.eagle.tester.jenkins.eagletesterjenkins;
+package com.mobileenerlytics.eagle.tester.common.util;
+
+import com.mobileenerlytics.eagle.tester.jenkins.eagletesterjenkins.EagleWrapper;
 
 import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
@@ -7,12 +9,12 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
-class EagleAuthenticator implements ClientRequestFilter {
+class AuthFilter implements ClientRequestFilter {
 
     private final String user;
     private final String password;
 
-    public EagleAuthenticator(EagleWrapper.DescriptorImpl descriptor) {
+    public AuthFilter(EagleWrapper.DescriptorImpl descriptor) {
         this.user = descriptor.getUsername();
         this.password = descriptor.getPassword();
     }
