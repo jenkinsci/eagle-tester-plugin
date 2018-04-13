@@ -33,8 +33,8 @@ public class NetUtils {
                 }
             };
 
-            FileBody fileBody1 = new FileBody(fileToUpload);
-            multipartEntity.addPart("file", fileBody1);
+            FileBody fileBody = new FileBody(fileToUpload);
+            multipartEntity.addPart("file", fileBody);
 
             for (Map.Entry<String, String> field : fields.entrySet()) {
                 multipartEntity.addPart(field.getKey(), new StringBody(field.getValue()));
