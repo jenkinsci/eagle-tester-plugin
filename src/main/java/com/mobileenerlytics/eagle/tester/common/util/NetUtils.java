@@ -1,64 +1,79 @@
 package com.mobileenerlytics.eagle.tester.common.util;
 
 import com.mobileenerlytics.eagle.tester.jenkins.eagletesterjenkins.EagleWrapper;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.Map;
 
 public class NetUtils {
-    public static Response upload(File fileToUpload, final String url, EagleWrapper.DescriptorImpl desc,
-                                  Map<String, String> fields) throws FileNotFoundException {
-        // Upload traces to server
-        Client client = getClient(desc);
-        WebTarget webTarget = client.target(url);
-        FormDataMultiPart multiPart = new FormDataMultiPart();
-        for(Map.Entry<String, String> field: fields.entrySet()) {
-            multiPart.field(field.getKey(), field.getValue());
+    public static CloseableHttpResponse upload(File fileToUpload, final String url, EagleWrapper.DescriptorImpl desc,
+                                               Map<String, String> fields) throws IOException {
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpPost httppost = new HttpPost(url);
+            setAuthHeader(httppost, desc);
+
+            MultipartEntity multipartEntity = new MultipartEntity() {
+                @Override
+                public boolean isChunked() {
+                    return true;
+                }
+            };
+
+            FileBody fileBody1 = new FileBody(fileToUpload);
+            multipartEntity.addPart("file", fileBody1);
+
+            for (Map.Entry<String, String> field : fields.entrySet()) {
+                multipartEntity.addPart(field.getKey(), new StringBody(field.getValue()));
+            }
+
+            httppost.setEntity(multipartEntity);
+
+            Log.d("Executing request: " + httppost.getRequestLine());
+            CloseableHttpResponse response = httpclient.execute(httppost);
+            Log.d(response.getStatusLine().toString());
+            Log.d(EntityUtils.toString(response.getEntity()));
+            return response;
         }
-        multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-        InputStream fileInStream = new FileInputStream(fileToUpload);
-
-        FileDataBodyPart fileDataBodyPart = new FileDataBodyPart(fileToUpload.getName(),
-                fileToUpload, MediaType.APPLICATION_OCTET_STREAM_TYPE);
-        fileDataBodyPart.setContentDisposition(
-                FormDataContentDisposition.name("file")
-                        .fileName(fileToUpload.getName()).build());
-        multiPart.bodyPart(fileDataBodyPart);
-
-        return webTarget.request()
-                .post(Entity.entity(multiPart, multiPart.getMediaType()));
-//                .post(Entity.entity(fileInStream, MediaType.MULTIPART_FORM_DATA_TYPE));
-
     }
 
     public static boolean authenticate(EagleWrapper.DescriptorImpl desc) {
-        Client client = getClient(desc);
-        String url = "https://tester.mobileenerlytics.com/api/auth/";
-        WebTarget webTarget = client.target(url);
-        Response response = webTarget.request().get();
-        if (200 == response.getStatusInfo().getStatusCode()) {
-            Log.i("Authed ~");
-            return true;
+        HttpGet httpget = new HttpGet("https://tester.mobileenerlytics.com/api/auth/");
+        setAuthHeader(httpget, desc);
+
+        try (CloseableHttpClient httpclient = HttpClients.createDefault();
+             CloseableHttpResponse response = httpclient.execute(httpget)) {
+            Log.d(response.getStatusLine().toString());
+            Log.d(EntityUtils.toString(response.getEntity()));
+            if (200 == response.getStatusLine().getStatusCode()) {
+                Log.i("Authed ~");
+                return true;
+            }
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         Log.w("Failed to authenticate. Check username, password");
         return false;
     }
 
-    public static Client getClient(EagleWrapper.DescriptorImpl descriptor) {
-        return ClientBuilder.newBuilder()
-                .register(MultiPartFeature.class)
-                .register(new AuthFilter(descriptor))
-                .build();
+    private static void setAuthHeader(HttpRequestBase requestBase, EagleWrapper.DescriptorImpl desc) {
+        String encoding = Base64.getEncoder().encodeToString((desc.getUsername() + ":" + desc.getPassword()).
+                getBytes(Charset.forName("UTF-8")));
+        requestBase.setHeader("Authorization", "Basic " + encoding);
     }
 }

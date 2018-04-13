@@ -17,14 +17,14 @@ import hudson.tasks.BuildWrapper;
 import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.core.Response;
 import java.io.*;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -157,9 +157,8 @@ public class EagleWrapper extends BuildWrapper {
             fields.put("branch", eagleTesterArgument.BRANCH);
             fields.put("commit", eagleTesterArgument.COMMIT);
             fields.put("cur_version", eagleTesterArgument.CURRENT_VERSION);
-
-            Response response = NetUtils.upload(fileToUpload, url, desc, fields);
-            if (200 == response.getStatusInfo().getStatusCode()) {
+            CloseableHttpResponse response = NetUtils.upload(fileToUpload, url, desc, fields);
+            if (200 == response.getStatusLine().getStatusCode()) {
                 listener.getLogger().printf("%s See the energy report at %s%n", TAG, desc.mServerUri);
             } else {
                 listener.getLogger().printf("%s Error uploading file %s to eagle server. %s%n", TAG,
@@ -262,7 +261,7 @@ public class EagleWrapper extends BuildWrapper {
 
     @Extension
     public static final class DescriptorImpl extends BuildWrapperDescriptor {
-        private String adb;
+        private String adb = null;
         private String username;
         private String password;
         private boolean debug;
