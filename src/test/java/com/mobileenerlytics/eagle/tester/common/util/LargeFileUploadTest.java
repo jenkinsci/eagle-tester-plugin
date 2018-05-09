@@ -5,6 +5,7 @@ import com.mobileenerlytics.eagle.tester.jenkins.eagletesterjenkins.EagleWrapper
 
 import java.io.File;
 import java.io.RandomAccessFile;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class LargeFileUploadTest {
         fields.put("commit", "c");
         fields.put("cur_version", "cv");
 
-        final String url = "http://localhost:38673/api/upload/version_energy";
+        final URL url = new URL("http://localhost:38673/api/upload/version_energy");
 
         Path filePath = Files.createTempFile("upload", ".zip");
         File file = filePath.toFile();

@@ -23,6 +23,8 @@ import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import java.io.*;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -145,8 +147,8 @@ public class EagleWrapper extends BuildWrapper {
                 return true;
             }
 
-            final String url = String.format("%s/api/upload/version_energy", desc.mServerUri);
-            listener.getLogger().printf("%s %s%n", TAG, url);
+            final URL url = new URL(String.format("%s/api/upload/version_energy", desc.mServerUri));
+            listener.getLogger().printf("%s %s%n", TAG, url.toString());
 
             Map<String, String> fields = new HashMap<>();
             fields.put("device", devices.get(0));
@@ -157,12 +159,17 @@ public class EagleWrapper extends BuildWrapper {
             fields.put("branch", eagleTesterArgument.BRANCH);
             fields.put("commit", eagleTesterArgument.COMMIT);
             fields.put("cur_version", eagleTesterArgument.CURRENT_VERSION);
-            CloseableHttpResponse response = NetUtils.upload(fileToUpload, url, desc, fields);
-            if (200 == response.getStatusLine().getStatusCode()) {
-                listener.getLogger().printf("%s See the energy report at %s%n", TAG, desc.mServerUri);
-            } else {
-                listener.getLogger().printf("%s Error uploading file %s to eagle server. %s%n", TAG,
-                        fileToUpload.getAbsolutePath(), response);
+            try {
+                CloseableHttpResponse response = NetUtils.upload(fileToUpload, url, desc, fields);
+                if (200 == response.getStatusLine().getStatusCode()) {
+                    listener.getLogger().printf("%s See the energy report at %s%n", TAG, desc.mServerUri);
+                } else {
+                    listener.getLogger().printf("%s Error uploading file %s to eagle server. %s %s%n", TAG,
+                            fileToUpload.getAbsolutePath(), response);
+                }
+            } catch(URISyntaxException e) {
+                listener.getLogger().printf("%s Error uploading file %s to eagle server. %s %s%n", TAG,
+                        fileToUpload.getAbsolutePath(), e.getMessage());
             }
             return true;
         }
@@ -183,7 +190,11 @@ public class EagleWrapper extends BuildWrapper {
 
         // Authenticate with the server
         if (!auth) {
-            auth = NetUtils.authenticate(desc);
+            try {
+                auth = NetUtils.authenticate(desc);
+            } catch(URISyntaxException e) {
+                listener.getLogger().printf("%s Error authenticating %s%n", TAG, e.getMessage());
+            }
         }
         if (!auth) {
             listener.fatalError(TAG + "Failed to authenticate. Tester may not produce output");
@@ -265,6 +276,7 @@ public class EagleWrapper extends BuildWrapper {
         private String username;
         private String password;
         private boolean debug;
+        private String license;
 
         String mServerUri = "https://tester.mobileenerlytics.com";
 
@@ -300,15 +312,15 @@ public class EagleWrapper extends BuildWrapper {
         public FormValidation doVerify(@QueryParameter("adb") final String adb,
                                       @QueryParameter("username") final String username,
                                       @QueryParameter("password") final String password,
-                                      @QueryParameter("eagleServerUri") final String eagleServerUri) {
+                                      @QueryParameter("eagleServerUri") final String eagleServerUri,
+                                      @QueryParameter("license") final String license) throws IOException, URISyntaxException {
             this.username = username;
             this.password = password;
+            this.license = license;
             setEagleServerUri(eagleServerUri);
             setAdb(adb);
 
-            if (!NetUtils.authenticate(this))
-                return FormValidation.error("Authentication failed. Incorrect username: " + username + " or password: " + password);
-            return FormValidation.ok("Success");
+            return NetUtils.formAuthenticate(this);
         }
 
         public String getAdb() {
@@ -340,6 +352,10 @@ public class EagleWrapper extends BuildWrapper {
 
         public String getEagleServerUri() {
             return mServerUri;
+        }
+
+        public String getLicense() {
+            return license;
         }
 
         public void setEagleServerUri(String eagleServerUri) {

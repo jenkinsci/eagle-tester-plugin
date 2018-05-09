@@ -13,11 +13,16 @@
         <f:entry title="Path to adb">
             <f:textbox field="adb" default="adb"/>
         </f:entry>
-        <f:entry title="Debug messages in build" field="debug">
-            <f:checkbox/>
-        </f:entry>
+        <f:advanced>
+            <f:entry title="Debug messages in build" field="debug">
+                <f:checkbox/>
+            </f:entry>
+            <f:entry title="License key">
+              <f:textarea field="license" />
+            </f:entry>
+        </f:advanced>
         <f:validateButton
            title="Verify" progress="Working..."
-           method="verify" with="adb,username,password,eagleServerUri" />
+           method="verify" with="adb,username,password,eagleServerUri,license" />
    </f:section>
 </j:jelly>
