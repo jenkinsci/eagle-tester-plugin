@@ -1,5 +1,6 @@
 package com.mobileenerlytics.eagle.tester.common.util;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.util.FormValidation;
 import net.nicholaswilliams.java.licensing.*;
 import net.nicholaswilliams.java.licensing.encryption.PasswordProvider;
@@ -88,7 +89,7 @@ public class LicenseVerifier implements PasswordProvider,
                 return FormValidation.error("Please correct system time to verify license");
 
         } catch(Exception e) {
-            return FormValidation.error("Invalid license string: " + licenseString + " : " + e.getMessage() +  e.getStackTrace());
+            return FormValidation.error("Invalid license string: " + licenseString + " : " + e.getMessage());
         }
 
         return FormValidation.ok("License verified!");
@@ -96,6 +97,7 @@ public class LicenseVerifier implements PasswordProvider,
 
     public static class EagleLicenseProvider extends DeserializingLicenseProvider {
         @Override
+        @SuppressFBWarnings({"DM_DEFAULT_ENCODING"})
         protected byte[] getLicenseData(Object o) {
             return Base64.decodeBase64(o.toString().getBytes());
         }

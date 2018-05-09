@@ -18,6 +18,7 @@ import hudson.tasks.BuildWrapperDescriptor;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -162,13 +163,14 @@ public class EagleWrapper extends BuildWrapper {
             try {
                 CloseableHttpResponse response = NetUtils.upload(fileToUpload, url, desc, fields);
                 if (200 == response.getStatusLine().getStatusCode()) {
+                    Log.d(EntityUtils.toString(response.getEntity()));
                     listener.getLogger().printf("%s See the energy report at %s%n", TAG, desc.mServerUri);
                 } else {
                     listener.getLogger().printf("%s Error uploading file %s to eagle server. %s %s%n", TAG,
-                            fileToUpload.getAbsolutePath(), response);
+                            fileToUpload.getAbsolutePath(), response.getStatusLine().toString(), EntityUtils.toString(response.getEntity()));
                 }
             } catch(URISyntaxException e) {
-                listener.getLogger().printf("%s Error uploading file %s to eagle server. %s %s%n", TAG,
+                listener.getLogger().printf("%s Error uploading file %s to eagle server. %s%n", TAG,
                         fileToUpload.getAbsolutePath(), e.getMessage());
             }
             return true;
