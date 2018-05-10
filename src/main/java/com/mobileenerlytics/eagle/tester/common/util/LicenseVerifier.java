@@ -84,7 +84,7 @@ public class LicenseVerifier implements PasswordProvider,
             if (goodBeforeDate.before(todayDate))
                 return FormValidation.error("License has expired. Please get a new license by logging into https://tester.mobileenerlytics.com");
 
-            Date goodAfterDate = new Date(license.getGoodBeforeDate());
+            Date goodAfterDate = new Date(license.getGoodAfterDate());
             if(goodAfterDate.after(todayDate))
                 return FormValidation.error("Please correct system time to verify license");
 
