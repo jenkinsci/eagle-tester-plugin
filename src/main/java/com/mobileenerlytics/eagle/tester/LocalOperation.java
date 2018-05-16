@@ -53,6 +53,7 @@ public abstract class LocalOperation {
 
                 if (tracesDir.exists()) {
                     // Compress the trace folder
+                    Log.d("Compressing trace directory");
                     Path outputFolderPath = outputFolder.toPath();
                     Path zipFilePath = outputFolderPath.resolve("traces.zip");
                     File zipFile = zipFilePath.toFile();
@@ -65,6 +66,8 @@ public abstract class LocalOperation {
                     }
                     ZipUtil.pack(tracesDir, zipFile);
                     return zipFile;
+                } else {
+                    Log.i("Traces directory does not exist: " + tracesDir.toString());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
